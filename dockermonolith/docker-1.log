@@ -1,0 +1,12 @@
+REPOSITORY                 TAG       IMAGE ID       CREATED              SIZE
+akulikov/ubuntu-tmp-file   latest    40af88c0cdd3   About a minute ago   63.2MB
+ubuntu                     18.04     dcf4d4bef137   12 days ago          63.2MB
+hello-world                latest    feb5d9fea6a5   4 months ago         13.3kB
+
+docker inspect d695159e4472
+docker inspect 40af88c0cdd3
+
+Вывод для контейнера и образа отличаются по следующим параметрам:
+1. image содержит иформацию о слоях, размере образа, когфигурацию образа и контейнеров
+2. container содержит HostConfig, в котором содержится большое количество инофрмации о запущенной ос/ядре. Также HostConfig содержит настройки сети - NetworkSettings
+3. container информацию о состоянии в State
