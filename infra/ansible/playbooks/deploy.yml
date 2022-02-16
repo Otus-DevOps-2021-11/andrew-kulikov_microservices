@@ -1,0 +1,13 @@
+---
+- name: Deploy App
+  hosts: all
+  tags: deploy
+  become: true
+
+  tasks:
+    - name: Run app docker container
+      docker_container:
+        name: reddit
+        image: andrewmachine/otus-reddit:1.0
+        ports:
+          - 9292:9292
