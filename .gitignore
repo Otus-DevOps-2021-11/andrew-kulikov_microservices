@@ -23,3 +23,5 @@ jdauphant.nginx
 .cache
 .pytest_cache
 *.yamllint
+
+.env
