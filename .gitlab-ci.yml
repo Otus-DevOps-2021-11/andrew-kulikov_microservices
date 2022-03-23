@@ -11,26 +11,26 @@ stages:
 variables:
   DATABASE_URL: 'mongodb://mongo/user_posts'
 
-before_script:
-- cd reddit
-- bundle instal
+# before_script:
+# - cd reddit
+# - bundle instal
 
-build_job:
-  stage: build
-  script:
-    - echo 'Building'
+# build_job:
+#   stage: build
+#   script:
+#     - echo 'Building'
 
-test_unit_job:
-  stage: test
-  services:
-    - mongo:latest
-  script:
-    - ruby simpletest.rb
+# test_unit_job:
+#   stage: test
+#   services:
+#     - mongo:latest
+#   script:
+#     - ruby simpletest.rb
 
-test_integration_job:
-  stage: test
-  script:
-    - echo 'Testing 2'
+# test_integration_job:
+#   stage: test
+#   script:
+#     - echo 'Testing 2'
 
 publish:
   image: docker:latest
@@ -38,6 +38,7 @@ publish:
   services:
     - docker:dind
   script:
+    - cd reddit
     - docker build -t $CI_ENVIRONMENT_SLUG .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $CI_ENVIRONMENT_SLUG
