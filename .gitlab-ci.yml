@@ -39,6 +39,11 @@ publish:
   stage: publish
   services:
     - docker:dind
+  before_script:
+    - echo $TAG_LATEST
+    - echo $CI_REGISTRY_IMAGE
+    - echo $CI_BUILD_TOKEN
+    - echo $CI_REGISTRY
   script:
     - cd reddit
     - docker build -t "$TAG_LATEST" .
