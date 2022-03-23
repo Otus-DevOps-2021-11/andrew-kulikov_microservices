@@ -41,9 +41,9 @@ publish:
     - docker:dind
   script:
     - cd reddit
-    - docker build -t $TAG_LATEST .
+    - docker build -t "$TAG_LATEST" .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - docker push $TAG_LATEST
+    - docker push "$TAG_LATEST"
 
 deploy_dev_job:
   image: alpine:latest
