@@ -38,13 +38,15 @@ publish:
   image: docker:latest
   stage: publish
   services:
-    - docker:dind
+    - name: docker:dind
+      entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
   before_script:
     - echo $TAG_LATEST
     - echo $CI_REGISTRY_IMAGE
     - echo $CI_BUILD_TOKEN
     - echo $CI_REGISTRY
   script:
+    - export DOCKER_HOST=tcp://127.0.0.1:2375
     - cd reddit
     - docker build -t "$TAG_LATEST" .
     # - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
