@@ -39,7 +39,7 @@ publish:
   stage: publish
   services:
     - name: docker:18-dind
-      entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
+      entrypoint: ["dockerd-entrypoint.sh", "--tls=false", "--insecure-registry=$CI_REGISTRY"]
   before_script:
     - echo $DAEMON_CONFIG
     - echo $TAG_LATEST
