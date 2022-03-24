@@ -35,10 +35,10 @@ variables:
 #     - echo 'Testing 2'
 
 publish:
-  image: docker:19-dind
+  image: docker:18-dind
   stage: publish
   services:
-    - name: docker:19-dind
+    - name: docker:18-dind
       entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
   before_script:
     - echo $TAG_LATEST
