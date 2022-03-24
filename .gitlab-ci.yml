@@ -47,7 +47,7 @@ publish:
     - echo $CI_BUILD_TOKEN
     - echo $CI_REGISTRY
   script:
-    - mv $DAEMON_CONFIG /etc/docker/daemon.json
+    - cat "$DAEMON_CONFIG" > /etc/docker/daemon.json
     - export DOCKER_TLS_CERTDIR=
     - cd reddit
     - docker build -t "$TAG_LATEST" .
