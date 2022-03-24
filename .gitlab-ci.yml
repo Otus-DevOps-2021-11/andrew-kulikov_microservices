@@ -35,10 +35,10 @@ variables:
 #     - echo 'Testing 2'
 
 publish:
-  image: docker:latest
+  image: docker:19
   stage: publish
   services:
-    - name: docker:dind
+    - name: docker:19-dind
       entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
   before_script:
     - echo $TAG_LATEST
@@ -47,6 +47,7 @@ publish:
     - echo $CI_REGISTRY
   script:
     - export DOCKER_HOST=tcp://127.0.0.1:2375
+    - export DOCKER_TLS_CERTDIR=
     - cd reddit
     - docker build -t "$TAG_LATEST" .
     # - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
