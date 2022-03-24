@@ -39,7 +39,7 @@ publish:
   stage: publish
   services:
     - name: docker:18-dind
-      entrypoint: ["dockerd-entrypoint.sh", "--tls=false", "--insecure-registry=$CI_REGISTRY"]
+      entrypoint: ["dockerd-entrypoint.sh", "--tls=false", "--insecure-registry=51.250.105.23:5000"]
   before_script:
     - echo $DAEMON_CONFIG
     - echo $TAG_LATEST
@@ -47,7 +47,7 @@ publish:
     - echo $CI_BUILD_TOKEN
     - echo $CI_REGISTRY
   script:
-    - cat "$DAEMON_CONFIG" > /etc/docker/daemon.json
+    - mkdir /etc/docker &&  cat "$DAEMON_CONFIG" > /etc/docker/daemon.json
     - export DOCKER_TLS_CERTDIR=
     - cd reddit
     - docker build -t "$TAG_LATEST" .
