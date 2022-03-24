@@ -41,11 +41,13 @@ publish:
     - name: docker:18-dind
       entrypoint: ["dockerd-entrypoint.sh", "--tls=false"]
   before_script:
+    - echo $DAEMON_CONFIG
     - echo $TAG_LATEST
     - echo $CI_REGISTRY_IMAGE
     - echo $CI_BUILD_TOKEN
     - echo $CI_REGISTRY
   script:
+    - mv $DAEMON_CONFIG /etc/docker/daemon.json
     - export DOCKER_TLS_CERTDIR=
     - cd reddit
     - docker build -t "$TAG_LATEST" .
