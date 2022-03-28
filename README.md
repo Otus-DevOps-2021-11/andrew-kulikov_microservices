@@ -1,44 +1,38 @@
-## Homework 14
+## Homework 15
 
-### Задание 1. Изменение названия проекта
+### Задание 1.
 
-По умолчанию docker-compose использует в качестве названия проекта имя папки, в которой находится. Изменить можно с помощью переменной среды COMPOSE_PROJECT_NAME. Ее также можно задать в файле .env
 
-### Доп задание. Переопределение настроек docker-compose
+### Доп задание. Деплой контейнера
 
-1. Чтобы иметь возможность изменять код приложения без ребилда контейнера, нам необходимо замапить локальную папку с кодом сервиса на директорию /app, из которой запускаются все сервисы. На примере сервиса ui это выглядит таким образом:
-```yml
-version: '3.3'
-services:
-  ui:
-    volumes:
-      - ./ui:/app
+1. Запускаем гитлаб
+2. Запускаем сервер приложения (с установленным docker)
+3. Запускаем runner
 ```
-
-2. Изменить entrypoint можно с помощью command в docker-compose. Пример для ui сервиса:
-```yml
-version: '3.3'
-services:
-  ui:
-    volumes:
-      - ./ui:/app
-    command: puma --debug -w 2
 ```
-
-Полный override конфиг:
-```yml
-version: '3.3'
-services:
-  ui:
-    volumes:
-      - ./ui:/app
-    command: puma --debug -w 2
-  post:
-    volumes:
-      - ./post-py:/app
-  comment:
-    volumes:
-      - ./comment:/app
-    command: puma --debug -w 2
-
+4. На сервере приложения добавляем юзера
+5. Создаем ssh ключ и добавляем его в переменные
+6. Добавляем переменные с логином юзера и адресом сервера для деплоя
+7. Поднимаем registry
+8. Прописываем на всех серверах insecure registry config и перезапускаем докер демон. Также добавляем в FILE - переменную DAEMON_CONFIG
+```json
+{
+  "insecure-registries" : ["51.250.105.23:5000", "10.129.0.29:5000"]
+}
 ```
+9. Регистрируем runner (важно, чтобы запускался privileged)
+```bash
+sudo gitlab-runner register \
+--url http://51.250.101.126/ \
+--non-interactive \
+--locked=false \
+--name DockerRunner \
+--executor docker \
+--docker-privileged \
+--docker-image docker:19-dind \
+--registration-token GR13489419-iNSU2_sxGZBqsPiZvW \
+--tag-list "linux,xenial,ubuntu,docker" \
+--run-untagged
+```
+10. Прописываем CI_REGISTRY_IMAGE и CI_REGISTRY c адресом registry
+11.
