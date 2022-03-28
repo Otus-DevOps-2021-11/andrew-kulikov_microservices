@@ -15,7 +15,7 @@ variables:
 
 # before_script:
 # - cd reddit
-# - bundle instal
+# - bundle install
 
 # build_job:
 #   stage: build
@@ -26,6 +26,9 @@ variables:
 #   stage: test
 #   services:
 #     - mongo:latest
+#   before_script:
+#     - cd reddit
+#     - bundle install
 #   script:
 #     - ruby simpletest.rb
 
