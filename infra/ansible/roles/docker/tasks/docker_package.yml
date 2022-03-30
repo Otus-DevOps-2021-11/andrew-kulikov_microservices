@@ -1,0 +1,30 @@
+---
+- name: Add signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+
+- name: Add Docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+    filename: docker
+
+- name: Install Docker package
+  apt:
+    update_cache: yes
+    pkg:
+      - docker-ce
+      - containerd.io
+      - python3-setuptools
+
+- name: Download docker-compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+
+- name: Install Docker Module for Python
+  pip:
+    name:
+      - docker
+      - docker-compose

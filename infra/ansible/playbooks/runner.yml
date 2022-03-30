@@ -1,0 +1,8 @@
+---
+- name: Install GitLab Runner
+  hosts: app
+  become: true
+  tags: runner
+
+  roles:
+    - runner

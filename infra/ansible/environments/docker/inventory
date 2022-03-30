@@ -1,2 +1,5 @@
 [app]
-appserver ansible_host=51.250.22.61
+appserver ansible_host=51.250.97.2 ansible_python_interpreter=/usr/bin/python3
+
+[ci]
+ciserver ansible_host=51.250.100.20 ansible_python_interpreter=/usr/bin/python3

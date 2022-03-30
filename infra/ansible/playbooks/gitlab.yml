@@ -1,0 +1,8 @@
+---
+- name: Install GitLab usnig Omnibus
+  hosts: ci
+  become: true
+  tags: server
+
+  roles:
+    - gitlab

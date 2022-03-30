@@ -1,0 +1,11 @@
+---
+- name: Install utility packages
+  tags: server
+  apt:
+    update_cache: yes
+    pkg:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip

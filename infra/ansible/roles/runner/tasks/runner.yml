@@ -1,0 +1,16 @@
+---
+- name: Download runner deb script
+  tags: runner
+  get_url:
+    url: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh
+    dest: /tmp/runner.deb.sh
+
+- name: Run deb script
+  tags: runner
+  shell: /tmp/runner.deb.sh
+
+- name: Install runner
+  tags: runner
+  apt:
+    pkg:
+      - gitlab-runner

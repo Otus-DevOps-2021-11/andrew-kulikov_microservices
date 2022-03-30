@@ -1,0 +1,16 @@
+---
+- name: Enable Docker service
+  service:
+    name: docker
+    enabled: yes
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+
+- name: Add user do docker group
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes

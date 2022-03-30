@@ -25,3 +25,4 @@ jdauphant.nginx
 *.yamllint
 
 .env
+venv/
