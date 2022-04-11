@@ -1,83 +1,106 @@
-## Homework 15
+## Homework 16
 
 
-### Доп задание 1. Деплой GitLab с помощью ansible
+### Доп задание 1. MongoDB exporter
 
-Конфигурация была разбита на роли, результаты можно увидеть в [roles](infra/ansible/roles) и [playbooks](infra/ansible/playbooks)
+Для этой задачи был использован percona exporter.
 
-
-
-### Доп задание 2. Деплой reddit
-
-Для экономии в учебных целях имеем 2 сервера:
-1. gitlab ci
-2. runner, registry, app
-
-Схема деплоя выглядит следующим образом:
-1. Собираем образ приложения и пушим его в приватный registry
-2. На стадии деплоя подключаемся по ssh к серверу приложения, стягиваем нужный образ и запускаем контейнер с приложением
-
-Выполняем следующие шаги:
-
-1. Запускаем gitlab, получаем пароль root юзера с помощью
-```bash
-sudo docker exec -it gitlab grep 'Password:' /etc/gitlab/initial_root_password
+Результат в docker-compose:
+```yml
+mongo-exporter:
+  image: percona/mongodb_exporter:0.20
+  ports:
+    - '9216:9216'
+  command:
+    - '--mongodb.uri=mongodb://mongo_db:27017'
+  networks:
+    - back_net
 ```
-2. На сервере приложения поднимаем runner
-```bash
-curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh > script.deb.sh
-sudo bash script.deb.sh
-sudo apt install gitlab-runner
-systemctl status gitlab-runner
+
+Конфигурация prometheus:
+```yml
+- job_name: 'mongo'
+  static_configs:
+    - targets:
+      - 'mongo-exporter:9216'
 ```
-3. На сервере приложения добавляем юзера
-```bash
-sudo adduser deployer
-sudo usermod -aG docker deployer
-su deployer
+
+### Доп задание 2. Blackbox exporter
+
+Был использован официальный blackbox exxporter и обычная http проба, настроенная через конфиг prometheus
+```yml
+blackbox-exporter:
+  image: prom/blackbox-exporter
+  ports:
+    - '9115:9115'
+  networks:
+    - back_net
 ```
-4. Создаем ssh ключ и добавляем его в переменную ID_RSA
-```bash
-ssh-keygen -b 4096
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-cat ~/.ssh/id_rsa
+
+Конфигурация prometheus:
+```yml
+- job_name: 'blackbox'
+  metrics_path: /probe
+  params:
+    module: [http_2xx]  # Look for a HTTP 200 response.
+  static_configs:
+    - targets:
+      - http://ui:9292
+      - http://comment:9292
+      - http://post:5000
+  relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: blackbox-exporter:9115  # The blackbox exporter's real hostname:port.
 ```
-5. Поднимаем registry
-```bash
-docker run -d -p 5000:5000 --restart=always --name registry registry:2
-```
-6. Добавляем конфигурацию для доступа к registry по http (/etc/docker/daemon.json):
-```json
-{
-  "insecure-registries" : ["51.250.97.2:5000"]
-}
-```
-7. Регистрируем runner (важно, чтобы запускался privileged):
-```bash
-sudo gitlab-runner register \
---url http://51.250.100.20/ \
---non-interactive \
---locked=false \
---name DockerRunner \
---executor docker \
---docker-privileged \
---docker-image docker:19-dind \
---registration-token GR1348941aD3Q3MtZuejz6kxjwREu \
---tag-list "linux,xenial,ubuntu,docker" \
---run-untagged
-```
-8. В конфигурации репозитория добавляем CI variables:
-```
-ID_RSA [File] - приватный ключ deployer
-SERVER_ADDRESS [Variable] - адрес сервера приложения (51.250.100.20)
-SERVER_USER [Variable] - юзер для подключения по ssh deployer
-DAEMON_CONFIG [File] - конфигурация докер демона для подключения к unsecure registry
-CI_REGISTRY [Variable] - адрес registry (51.250.100.20:5000)
-CI_REGISTRY_IMAGE [Variable] - имя образа в registry (51.250.100.20:5000/homework/example)
-```
-9. Запускаем пайплайн, после успешного деплоя переходим по ссылке в environment
+
+### Доп задание 3. Makefile для образов докера
+
+Был создан простой [Makefile](src/Makefile), включающий в себя возможность сборки и отравки образов как каждого из образов по отдельности, так и всех сразу. Так же подтягивает переменные из ранее созданного .env файла.
+
+```Makefile
+include .env
 
 
-### Доп задание 3. Ansible роли для runner
+all: post comment ui prometheus
 
-Конфигурация была разбита на роли, результаты можно увидеть в [roles](infra/ansible/roles) и [playbooks](infra/ansible/playbooks)
+
+post: build_post push_post
+
+comment: build_comment push_comment
+
+ui: build_ui push_ui
+
+prometheus:	build_prometheus push_prometheus
+
+
+build_post:
+	docker build -t ${IMAGE_USERNAME}/post:${POST_VERSION} ./post-py
+
+push_post:
+	docker push ${IMAGE_USERNAME}/post:${POST_VERSION}
+
+
+build_comment:
+	docker build -t ${IMAGE_USERNAME}/comment:${COMMENT_VERSION} ./comment
+
+push_comment:
+	docker push ${IMAGE_USERNAME}/comment:${COMMENT_VERSION}
+
+
+build_ui:
+	docker build -t ${IMAGE_USERNAME}/ui:${UI_VERSION} ./ui
+
+push_ui:
+	docker push ${IMAGE_USERNAME}/ui:${UI_VERSION}
+
+
+build_prometheus:
+	docker build -t ${IMAGE_USERNAME}/prometheus:${PROMETHEUS_VERISION} ../monitoring/prometheus
+
+push_prometheus:
+	docker push ${IMAGE_USERNAME}/prometheus:${PROMETHEUS_VERISION}
+```

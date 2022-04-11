@@ -35,7 +35,7 @@ services:
       - mongo_db:comment_db
 
   prometheus:
-    image: ${IMAGE_USERNAME}/prometheus
+    image: ${IMAGE_USERNAME}/prometheus:${PROMETHEUS_VERISION}
     ports:
       - '9090:9090'
     volumes:
