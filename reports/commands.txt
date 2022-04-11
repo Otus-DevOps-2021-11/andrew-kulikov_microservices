@@ -55,3 +55,6 @@ sudo gitlab-runner register -n \
 docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus
 
 docker run -d --network=reddit_back_net -p 9216:9216 -p 17001:17001 percona/mongodb_exporter:0.20 --mongodb.uri=mongodb://mongo_db:27017
+
+export USER_NAME=andrewmachine
+docker build -t $USER_NAME/prometheus .
