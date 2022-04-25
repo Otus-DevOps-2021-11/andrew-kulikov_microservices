@@ -15,6 +15,11 @@ services:
       - ${UI_EXTERNAL_PORT}:9292/tcp
     networks:
       - front_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
 
   post:
     build: ./post-py
@@ -24,6 +29,11 @@ services:
       - front_net
     links:
       - mongo_db:post_db
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
 
   comment:
     build: ./comment
@@ -78,11 +88,46 @@ services:
     networks:
       - back_net
 
+  fluentd:
+    image: ${IMAGE_USERNAME}/fluentd
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - observability
+
+  elasticsearch:
+    image: elasticsearch:7.4.0
+    environment:
+      - ELASTIC_CLUSTER=false
+      - CLUSTER_NODE_MASTER=true
+      - CLUSTER_MASTER_NODE_NAME=es01
+      - discovery.type=single-node
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+    networks:
+      - observability
+
+  kibana:
+    image: kibana:7.4.0
+    ports:
+      - "5601:5601"
+    links:
+      - "elasticsearch"
+    networks:
+      - observability
+
 volumes:
   mongo_db:
   prometheus_data:
 
 networks:
+  observability:
+    driver: bridge
   back_net:
     driver: bridge
   front_net:
