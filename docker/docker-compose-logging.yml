@@ -1,0 +1,151 @@
+version: '3.3'
+services:
+
+  mongo_db:
+    image: mongo:latest
+    volumes:
+      - mongo_db:/data/db
+    networks:
+      - back_net
+
+  ui:
+    build: ../src/ui
+    image: ${IMAGE_USERNAME}/ui:${UI_VERSION}
+    ports:
+      - ${UI_EXTERNAL_PORT}:9292/tcp
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    networks:
+      - front_net
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
+
+  post:
+    build: ../src/post-py
+    image: ${IMAGE_USERNAME}/post:${POST_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    networks:
+      - back_net
+      - front_net
+    links:
+      - mongo_db:post_db
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
+
+  comment:
+    build: ../src/comment
+    image: ${IMAGE_USERNAME}/comment:${COMMENT_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    networks:
+      - back_net
+      - front_net
+    links:
+      - mongo_db:comment_db
+
+  prometheus:
+    image: ${IMAGE_USERNAME}/prometheus:${PROMETHEUS_VERISION}
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+    networks:
+      - front_net
+      - back_net
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter
+    ports:
+      - '9115:9115'
+    networks:
+      - back_net
+
+  node-exporter:
+    image: prom/node-exporter
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      - back_net
+
+  mongo-exporter:
+    image: percona/mongodb_exporter:0.20
+    ports:
+      - '9216:9216'
+    command:
+      - '--mongodb.uri=mongodb://mongo_db:27017'
+    networks:
+      - back_net
+
+  fluentd:
+    image: ${IMAGE_USERNAME}/fluentd
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - observability
+
+  elasticsearch:
+    image: elasticsearch:7.4.0
+    environment:
+      - ELASTIC_CLUSTER=false
+      - CLUSTER_NODE_MASTER=true
+      - CLUSTER_MASTER_NODE_NAME=es01
+      - discovery.type=single-node
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+    networks:
+      - observability
+
+  kibana:
+    image: kibana:7.4.0
+    ports:
+      - "5601:5601"
+    links:
+      - "elasticsearch"
+    networks:
+      - observability
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - front_net
+      - back_net
+
+volumes:
+  mongo_db:
+  prometheus_data:
+
+networks:
+  observability:
+    driver: bridge
+  back_net:
+    driver: bridge
+  front_net:
+    driver: bridge
