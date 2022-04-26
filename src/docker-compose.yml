@@ -13,8 +13,12 @@ services:
     image: ${IMAGE_USERNAME}/ui:${UI_VERSION}
     ports:
       - ${UI_EXTERNAL_PORT}:9292/tcp
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
       - front_net
+    links:
+      - fluentd
     logging:
       driver: "fluentd"
       options:
@@ -24,11 +28,14 @@ services:
   post:
     build: ./post-py
     image: ${IMAGE_USERNAME}/post:${POST_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
       - back_net
       - front_net
     links:
       - mongo_db:post_db
+      - fluentd
     logging:
       driver: "fluentd"
       options:
@@ -38,6 +45,8 @@ services:
   comment:
     build: ./comment
     image: ${IMAGE_USERNAME}/comment:${COMMENT_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
       - back_net
       - front_net
@@ -120,6 +129,14 @@ services:
       - "elasticsearch"
     networks:
       - observability
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - front_net
+      - back_net
 
 volumes:
   mongo_db:
