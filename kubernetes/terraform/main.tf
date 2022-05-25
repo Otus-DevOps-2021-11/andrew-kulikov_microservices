@@ -5,8 +5,8 @@ provider "yandex" {
   zone                     = var.zone
 }
 
-resource "yandex_compute_instance" "kuber-control-plane" {
-  name = "kuber-control-${var.environment}"
+resource "yandex_compute_instance" "kuber-master" {
+  name = "kuber-master-${var.environment}"
 
   labels = {
     tags = "kubernetes"
