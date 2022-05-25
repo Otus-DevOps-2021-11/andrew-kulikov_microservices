@@ -1,0 +1,5 @@
+[masters]
+master ansible_host=84.201.178.11 ansible_python_interpreter=/usr/bin/python3
+
+[workers]
+node1 ansible_host=51.250.28.175 ansible_python_interpreter=/usr/bin/python3

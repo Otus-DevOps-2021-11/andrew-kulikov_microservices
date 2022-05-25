@@ -1,0 +1,58 @@
+---
+- hosts: masters
+  tasks:
+    - name: Install acl package to allow change user
+      become: true
+      apt:
+        pkg: acl
+
+    # TODO: Comment disabled_plugins = ["cri"] in /etc/containerd/config.toml if present
+
+    - name: Initialize Kubernetes cluster via kubeadm
+      ignore_errors: true
+      become: true
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+
+    - name: Creade .kube directory
+      become: true
+      file:
+        path: /home/kube/.kube
+        state: directory
+
+    - name: Copy admin.conf to Kubernetes user config
+      become: true
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/kube/.kube/config
+        remote_src: yes
+        owner: kube
+
+    - name: Install Calico network plugin
+      become: true
+      become_user: kube
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      args:
+        chdir: $HOME
+
+    - name: Install local path storage plugin
+      become: true
+      become_user: kube
+      shell: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+      args:
+        chdir: $HOME
+
+    - name: Get the token for joining the worker nodes
+      become: true
+      become_user: kube
+      shell: kubeadm token create --print-join-command
+      register: kubernetes_join_command
+
+    - name: Print join command output
+      debug:
+        msg: "{{ kubernetes_join_command.stdout }}"
+
+    - name: Copy join command to local file
+      local_action:
+        module: copy
+        content: "{{ kubernetes_join_command.stdout_lines[0] }}"
+        dest: /tmp/kubernetes_join_command
