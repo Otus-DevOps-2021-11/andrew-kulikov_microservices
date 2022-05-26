@@ -1,0 +1,13 @@
+---
+- name: Initialize worker node
+  hosts: workers
+  become: true
+
+  tasks:
+    - name: Copy join command from Ansible host to the worker nodes
+      copy:
+        src: /tmp/kubernetes_join_command
+        dest: /tmp/kubernetes_join_command
+
+    - name: Join the Worker nodes to the cluster
+      command: sh /tmp/kubernetes_join_command
