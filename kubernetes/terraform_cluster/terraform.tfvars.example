@@ -1,0 +1,7 @@
+service_account_key_file = "~/example/key.json"
+cloud_id                 = "rrrrrrrrrrrrrrrrrrrr"
+folder_id                = "eeeeeeeeeeeeeeeeeeee"
+zone                     = "ru-central1-b"
+subnet_id                = "wwwwwwwwwwwwwwwwwwww"
+service_account_id       = "qqqqqqqqqqqqqqqqqqqq"
+network_id               = "tttttttttttttttttttt"
