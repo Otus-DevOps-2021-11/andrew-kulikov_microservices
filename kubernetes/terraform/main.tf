@@ -14,7 +14,7 @@ resource "yandex_compute_instance" "kuber-master" {
   }
 
   resources {
-     cores  = 4
+    cores  = 4
     memory = 4
   }
 

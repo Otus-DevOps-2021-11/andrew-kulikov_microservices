@@ -1,24 +1,3 @@
-## Homework 19
-
-
-### Задание 1. Развертывание кластера в yandex cloud
-
-Скриншоты развернутого кластера:
-
-Сервисы кластера из dev namespace:
-<img src="reports/hw19_kubernetes2/services.png">
-
-Instances:
-<img src="reports/hw19_kubernetes2/instances.png">
-
-Интерфейс приложения на NodePort
-<img src="reports/hw19_kubernetes2/reddit.png">
-
-### Доп задание 1. Развертывание кластера с помощью terraform
-
-Конфигурация terraform [terraform_cluster](kubernetes/terraform_cluster):
-
-```terraform
 provider "yandex" {
   service_account_key_file = var.service_account_key_file
   cloud_id                 = var.cloud_id
@@ -104,4 +83,3 @@ resource "yandex_kubernetes_node_group" "reddit_node_group" {
     auto_repair  = true
   }
 }
-```
